@@ -5,58 +5,59 @@ grid_dimensions: 2D
 neighborhood: moore
 neighborhood_size: 3x3
 states:
-  empty: 0
-  electron_head: 1
-  electron_tail: 2
-  conductor: 3
+  _: Empty
+  H: Electron Head (red)
+  T: Electron Tail (blue)
+  W: Conductor Wire (yellow)
 
 rules:
-  - name: Head to Tail
-    description: An Electron Head always becomes an Electron Tail.
-    when: |
-      X X X
-      X 1 X
-      X X X
-    then: 2
-
-  - name: Tail to Conductor
-    description: An Electron Tail always becomes a Conductor.
-    when: |
-      X X X
-      X 2 X
-      X X X
-    then: 3
 
   - name: Conductor to Head
     description: A Conductor becomes an Electron Head if it has 1 or 2 Electron Heads in its neighbors.
     when: |
       X X X
-      X 3 X
+      X W X
       X X X
     conditions:
       - type: neighbor_count
-        state: 1
+        state: H
         operator: in
         values: [1, 2]
-    then: 1
+    then: H
+
+  - name: Tail to Conductor
+    description: An Electron Tail always becomes a Conductor.
+    when: |
+      X X X
+      X T X
+      X X X
+    then: W
+
+  - name: Head to Tail
+    description: An Electron Head always becomes an Electron Tail.
+    when: |
+      X X X
+      X H X
+      X X X
+    then: T
 
   - name: Default Conductor
     description: A Conductor remains a Conductor if it does not meet the criteria to become an Electron Head.
     when: |
       X X X
-      X 3 X
+      X W X
       X X X
     conditions:
       - type: neighbor_count
-        state: 1
+        state: H
         operator: not in
-        values: [1, 2]
-    then: 3
+        values: [H, T]
+    then: W
 
   - name: Default Empty
     description: An Empty cell always remains Empty.
     when: |
       X X X
-      X 0 X
+      X _ X
       X X X
-    then: 0
+    then: _
