@@ -58,20 +58,39 @@ class RuleSet:
 
     @staticmethod
     def from_yaml(path):
+        def parse_when(when_str):
+            # Split lines, split by space, convert to int or 'X'
+            lines = [line.strip() for line in when_str.strip().splitlines() if line.strip()]
+            pattern = []
+            for line in lines:
+                row = []
+                for cell in line.split():
+                    if cell == 'X':
+                        row.append('X')
+                    else:
+                        try:
+                            row.append(int(cell))
+                        except Exception:
+                            row.append(cell)
+                pattern.append(row)
+            return pattern
+
         with open(path, 'r') as f:
             data = yaml.safe_load(f)
         states = {v: k for k, v in data['states'].items()}
         rules = []
         for rule in data['rules']:
-            # Convert pattern: replace state names with ints, keep 'X' as is
-            pat = []
-            for row in rule['pattern']:
-                pat.append([cell if cell == 'X' else int(cell) for cell in row])
+            pat = parse_when(rule['when'])
+            then = rule['then']
+            try:
+                new_state = int(then)
+            except Exception:
+                new_state = then
             rules.append(Rule(
                 name=rule['name'],
                 description=rule.get('description', ''),
                 pattern=pat,
-                new_state=rule['new_state'],
+                new_state=new_state,
                 conditions=rule.get('conditions', [])
             ))
         return RuleSet(rules, states)
