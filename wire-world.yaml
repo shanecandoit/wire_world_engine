@@ -1,0 +1,62 @@
+name: Wireworld
+
+description: Classic cellular automaton simulating electron flow.
+grid_dimensions: 2D
+neighborhood: moore
+neighborhood_size: 3x3
+states:
+  empty: 0
+  electron_head: 1
+  electron_tail: 2
+  conductor: 3
+
+rules:
+  - name: Head to Tail
+    description: An Electron Head always becomes an Electron Tail.
+    pattern:
+      - [X, X, X]
+      - [X, 1, X]
+      - [X, X, X]
+    new_state: 2
+
+  - name: Tail to Conductor
+    description: An Electron Tail always becomes a Conductor.
+    pattern:
+      - [X, X, X]
+      - [X, 2, X]
+      - [X, X, X]
+    new_state: 3
+
+  - name: Conductor to Head
+    description: A Conductor becomes an Electron Head if it has 1 or 2 Electron Heads in its neighbors.
+    pattern:
+      - [X, X, X]
+      - [X, 3, X]
+      - [X, X, X]
+    conditions:
+      - type: neighbor_count
+        state: 1
+        operator: in
+        values: [1, 2]
+    new_state: 1
+
+  - name: Default Conductor
+    description: A Conductor remains a Conductor if it does not meet the criteria to become an Electron Head.
+    pattern:
+      - [X, X, X]
+      - [X, 3, X]
+      - [X, X, X]
+    conditions:
+      - type: neighbor_count
+        state: 1
+        operator: not in
+        values: [1, 2]
+    new_state: 3
+
+  - name: Default Empty
+    description: An Empty cell always remains Empty.
+    pattern:
+      - [X, X, X]
+      - [X, 0, X]
+      - [X, X, X]
+    new_state: 0
